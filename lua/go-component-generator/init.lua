@@ -65,25 +65,49 @@ local function getGoPackageName()
 	return nil
 end
 
+local function selectImplementation(args)
+	vim.ui.select(args.values, { prompt = 'Select implementaion' }, function(implementation)
+		if implementation then
+			-- Use the choice by calling another function
+			sendTextToExternalCommand(implementation, args.packageName, args.text, args.end_line)
+		else
+			print("No choice made.")
+		end
+	end)
+end
+
+
+local function askForPossibleImplementations(args)
+	Job:new({
+		command = "go-component-generator",
+		args = { "list" },
+		on_exit = function(j, return_val)
+			-- Process output or handle errors
+			local result = j:result()
+
+			vim.schedule(function()
+				if return_val == 0 and result ~= "" then
+					args.values = result
+					selectImplementation(args)
+				else
+					-- Handle error output
+					local err = table.concat(j:stderr_result(), "\n")
+					print("Command error:", err)
+				end
+			end)
+		end,
+	}):start()
+end
+
 
 M.implement = function(opts)
 	local start_line = opts.line1 or vim.api.nvim_win_get_cursor(0)[1]
 	local end_line = opts.line2 or vim.api.nvim_win_get_cursor(0)[1]
 	local text = getTextFromRange(start_line, end_line)
 	local packageName = getGoPackageName()
+	local args = { start_line, end_line, text, packageName }
 
-	local values = {
-		"prometheus",
-	}
-
-	vim.ui.select(values, { prompt = 'Select implementaion' }, function(implementation)
-		if implementation then
-			-- Use the choice by calling another function
-			sendTextToExternalCommand(implementation, packageName, text, end_line)
-		else
-			print("No choice made.")
-		end
-	end)
+	askForPossibleImplementations(args)
 end
 
 
