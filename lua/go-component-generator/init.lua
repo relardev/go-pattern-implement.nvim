@@ -21,8 +21,8 @@ end
 local function sendTextToExternalCommand(implementation, package, text, end_line)
 	Job:new({
 		command = "go-component-generator",
-		args = { "--package=" .. package, implementation }, -- Add command arguments here if necessary
-		writer = text,                                    -- Sends `text` as stdin to the command
+		args = { "implement", implementation, "--package=" .. package },
+		writer = text, -- Sends `text` as stdin to the command
 		on_exit = function(j, return_val)
 			-- Process output or handle errors
 			local result = j:result()
