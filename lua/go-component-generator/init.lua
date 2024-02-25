@@ -3,7 +3,6 @@ local Job = require 'plenary.job'
 local M = {}
 
 function M.setup()
-	print("Setting up go code generator")
 	vim.api.nvim_create_user_command(
 		"GoImplement",
 		function(opts)

@@ -2,7 +2,7 @@
 
 ## prequisites
 
- 1. `go-command-generator` available in path
+ 1. `go-component-generator` available in path
 
 ## use with lazy
 
