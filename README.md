@@ -22,4 +22,4 @@
 
 ## usage
 
-select range and call `:GoImplement`
+select `interface type` in visual selection and call `:GoImplement`
