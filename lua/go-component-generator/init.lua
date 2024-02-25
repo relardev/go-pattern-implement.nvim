@@ -19,11 +19,11 @@ local function getTextFromRange(start_line, end_line)
 	return table.concat(lines, "\n")
 end
 
-local function sendTextToExternalCommand(implementation, text, end_line)
+local function sendTextToExternalCommand(implementation, package, text, end_line)
 	Job:new({
 		command = "go-component-generator",
-		args = { implementation }, -- Add command arguments here if necessary
-		writer = text,           -- Sends `text` as stdin to the command
+		args = { "--package=" .. package, implementation }, -- Add command arguments here if necessary
+		writer = text,                                    -- Sends `text` as stdin to the command
 		on_exit = function(j, return_val)
 			-- Process output or handle errors
 			local result = j:result()
@@ -46,11 +46,32 @@ local function sendTextToExternalCommand(implementation, text, end_line)
 	}):start()
 end
 
+local function getGoPackageName()
+	-- Get the current buffer
+	local bufnr = vim.api.nvim_get_current_buf()
+
+	-- Get all lines in the current buffer
+	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+	-- Iterate through each line to find the package declaration
+	for _, line in ipairs(lines) do
+		-- Check if the line starts with the package keyword
+		if line:match("^package%s+") then
+			-- Extract the package name and return it
+			return line:match("^package%s+(%S+)")
+		end
+	end
+
+	-- Return nil if no package declaration was found
+	return nil
+end
+
 
 M.implement = function(opts)
 	local start_line = opts.line1 or vim.api.nvim_win_get_cursor(0)[1]
 	local end_line = opts.line2 or vim.api.nvim_win_get_cursor(0)[1]
 	local text = getTextFromRange(start_line, end_line)
+	local packageName = getGoPackageName()
 
 	local values = {
 		"prometheus",
@@ -59,7 +80,7 @@ M.implement = function(opts)
 	vim.ui.select(values, { prompt = 'Select implementaion' }, function(implementation)
 		if implementation then
 			-- Use the choice by calling another function
-			sendTextToExternalCommand(implementation, text, end_line)
+			sendTextToExternalCommand(implementation, packageName, text, end_line)
 		else
 			print("No choice made.")
 		end
