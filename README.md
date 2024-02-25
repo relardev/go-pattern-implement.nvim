@@ -4,7 +4,7 @@
 
  1. `go-component-generator` available in path
 
-## use with lazy
+## install with lazy
 
 ```
 {
@@ -19,3 +19,7 @@
 }
 
 ```
+
+## usage
+
+select range and call `:GoImplement`
