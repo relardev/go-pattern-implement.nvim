@@ -105,7 +105,10 @@ M.implement = function(opts)
 	local end_line = opts.line2 or vim.api.nvim_win_get_cursor(0)[1]
 	local text = getTextFromRange(start_line, end_line)
 	local packageName = getGoPackageName()
-	local args = { start_line, end_line, text, packageName }
+	local args = {}
+	args.packageName = packageName
+	args.text = text
+	args.end_line = end_line
 
 	askForPossibleImplementations(args)
 end
