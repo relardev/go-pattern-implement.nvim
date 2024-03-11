@@ -11,6 +11,14 @@ function M.setup()
 		end,
 		{ range = true }
 	)
+
+	vim.api.nvim_create_user_command(
+		"GoImplementPaste",
+		function(_)
+			vim.api.nvim_put(M.result, "", true, true)
+		end,
+		{ range = false }
+	)
 end
 
 local function getTextFromRange(start_line, end_line)
@@ -30,12 +38,8 @@ local function sendTextToExternalCommand(implementation, package, text, end_line
 
 			vim.schedule(function()
 				if return_val == 0 and result ~= "" then
-					-- Adjust end_line + 1 to end_line + 0 or another value as needed
-					local gnerated = { "" }
-					for i = 1, #result do
-						table.insert(gnerated, result[i])
-					end
-					vim.api.nvim_buf_set_lines(0, end_line, end_line, false, gnerated)
+					M.result = result
+					print("saved result to cache, to paste use :GoImplementPaste")
 				else
 					-- Handle error output
 					local err = table.concat(j:stderr_result(), "\n")
