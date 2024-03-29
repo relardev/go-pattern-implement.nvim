@@ -1,24 +1,16 @@
-local Job = require 'plenary.job'
-local Path = require 'plenary.path'
+local Job = require("plenary.job")
+local Path = require("plenary.path")
 
 local M = {}
 
 function M.setup()
-	vim.api.nvim_create_user_command(
-		"GoImplement",
-		function(opts)
-			M.implement(opts)
-		end,
-		{ range = true }
-	)
+	vim.api.nvim_create_user_command("GoImplement", function(opts)
+		M.implement(opts)
+	end, { range = true })
 
-	vim.api.nvim_create_user_command(
-		"GoImplementPaste",
-		function(_)
-			vim.api.nvim_put(M.result, "", true, true)
-		end,
-		{ range = false }
-	)
+	vim.api.nvim_create_user_command("GoImplementPaste", function(_)
+		vim.api.nvim_put(M.result, "", true, true)
+	end, { range = false })
 end
 
 local function getTextFromRange(start_line, end_line)
@@ -29,7 +21,7 @@ end
 
 local function sendTextToExternalCommand(implementation, package, text, end_line)
 	Job:new({
-		command = "go-component-generator",
+		command = "go-pattern-implement",
 		args = { "implement", implementation, "--package=" .. package },
 		writer = text, -- Sends `text` as stdin to the command
 		on_exit = function(j, return_val)
@@ -85,19 +77,19 @@ end
 
 local function selectImplementation(args)
 	-- use telescope if available, or fallback to vim.ui.select
-	local ok, _ = pcall(require, 'telescope')
+	local ok, _ = pcall(require, "telescope")
 	if ok then
 		local items = {}
 		for _, line in ipairs(args.values) do
 			local split = split(line, " - ")
 			table.insert(items, { name = line, value = split[1] })
 		end
-		local pickers = require('telescope.pickers')
-		local finders = require('telescope.finders')
-		local previewers = require('telescope.previewers')
-		local conf = require('telescope.config').values
-		local actions = require('telescope.actions')
-		local action_state = require('telescope.actions.state')
+		local pickers = require("telescope.pickers")
+		local finders = require("telescope.finders")
+		local previewers = require("telescope.previewers")
+		local conf = require("telescope.config").values
+		local actions = require("telescope.actions")
+		local action_state = require("telescope.actions.state")
 
 		local previewer = function(opts)
 			return previewers.new_buffer_previewer({
@@ -108,10 +100,11 @@ local function selectImplementation(args)
 
 				define_preview = function(self, entry)
 					-- Define how to fill the buffer with the command's output
-					local tmpfile = Path:new('/tmp/telescope_preview_component_generator')
-					tmpfile:write(args.text, 'w')
+					local tmpfile = Path:new("/tmp/telescope_preview_pattern_implenet")
+					tmpfile:write(args.text, "w")
 
-					local cmd = string.format("go-component-generator implement %s --package=%s < %s",
+					local cmd = string.format(
+						"go-pattern-implement implement %s --package=%s < %s",
 						entry.value,
 						args.packageName,
 						tmpfile
@@ -126,15 +119,17 @@ local function selectImplementation(args)
 							-- Use vim.schedule to interact with the Neovim API safely from an async context
 							vim.schedule(function()
 								-- Ensure the buffer is valid and hasn't been deleted
-								if not vim.api.nvim_buf_is_valid(self.state.bufnr) then return end
+								if not vim.api.nvim_buf_is_valid(self.state.bufnr) then
+									return
+								end
 								-- Set buffer content
-								vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.split(result, '\n'))
+								vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.split(result, "\n"))
 								-- Set filetype for syntax highlighting
-								vim.api.nvim_buf_set_option(self.state.bufnr, 'filetype', 'go')
+								vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "go")
 							end)
 						end,
 					}):start()
-				end
+				end,
 			})
 		end
 
@@ -142,32 +137,34 @@ local function selectImplementation(args)
 			sendTextToExternalCommand(entry.value, args.packageName, args.text, args.end_line)
 		end
 
-		pickers.new({}, {
-			prompt_title = "Select implementaion",
-			finder = finders.new_table({
-				results = items,
-				entry_maker = function(entry)
-					return {
-						value = entry.value,
-						display = entry.name,
-						ordinal = entry.name,
-					}
-				end
-			}),
-			sorter = conf.generic_sorter({}),
-			previewer = previewer({}),
-			attach_mappings = function(prompt_bufnr, _)
-				actions.select_default:replace(function()
-					local selection = action_state.get_selected_entry()
-					actions.close(prompt_bufnr)
-					-- Call your custom function on selection
-					on_item_selected(selection)
-				end)
-				return true
-			end
-		}):find()
+		pickers
+			.new({}, {
+				prompt_title = "Select implementaion",
+				finder = finders.new_table({
+					results = items,
+					entry_maker = function(entry)
+						return {
+							value = entry.value,
+							display = entry.name,
+							ordinal = entry.name,
+						}
+					end,
+				}),
+				sorter = conf.generic_sorter({}),
+				previewer = previewer({}),
+				attach_mappings = function(prompt_bufnr, _)
+					actions.select_default:replace(function()
+						local selection = action_state.get_selected_entry()
+						actions.close(prompt_bufnr)
+						-- Call your custom function on selection
+						on_item_selected(selection)
+					end)
+					return true
+				end,
+			})
+			:find()
 	else
-		vim.ui.select(args.values, { prompt = 'Select implementaion' }, function(implementation)
+		vim.ui.select(args.values, { prompt = "Select implementaion" }, function(implementation)
 			if implementation then
 				local split = split(implementation, " - ")
 				implementation = split[1]
@@ -180,10 +177,9 @@ local function selectImplementation(args)
 	end
 end
 
-
 local function askForPossibleImplementations(args)
 	Job:new({
-		command = "go-component-generator",
+		command = "go-pattern-implement",
 		args = { "list", "--available" },
 		writer = args.text, -- Sends `text` as stdin to the command
 		on_exit = function(j, return_val)
@@ -204,7 +200,6 @@ local function askForPossibleImplementations(args)
 	}):start()
 end
 
-
 M.implement = function(opts)
 	local start_line = opts.line1 or vim.api.nvim_win_get_cursor(0)[1]
 	local end_line = opts.line2 or vim.api.nvim_win_get_cursor(0)[1]
@@ -217,6 +212,5 @@ M.implement = function(opts)
 
 	askForPossibleImplementations(args)
 end
-
 
 return M

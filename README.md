@@ -1,25 +1,30 @@
-# GO Component Generator NeoVim harness
+# GO Pattern Implement NeoVim Integration
 
-## prequisites
+## Prequisites
 
- 1. `go-component-generator` available in path
+ 1. `go-pattern-implement` available in path
 
-## install with lazy
+## Example Install And Setup With Lazy
 
 ```
 {
-    "relardev/go-component-generator.nvim",
-
-    config = function()
-        require('go-component-generator').setup()
-    end,
-    dependencies = {
-        { 'nvim-lua/plenary.nvim' },
-    }
+    "relardev/go-pattern-implement.nvim",
+	opts = {},
+	keys = {
+		{ "<leader>n", ":GoImplement<CR>", mode = "v" },
+		{ "<leader>n", ":GoImplementPaste<CR>", mode = "n" },
+	},
+	cmd = {
+		"GoImplement",
+		"GoImplementPaste",
+	},
+	dependencies = {
+		{ "nvim-lua/plenary.nvim" },
+	}
 }
 
 ```
 
-## usage
+## Usage
 
-select `interface type` in visual selection and call `:GoImplement`
+select fragment of code you want implementation for in visual selection and call `:GoImplement`, to paste implementation where you want it do `:GoImplementPaste`
