@@ -4,7 +4,7 @@
 
 ## Prequisites
 
- 1. `go-pattern-implement` available in path ![link](https://github.com/relardev/go-pattern-implement)
+ 1. `go-pattern-implement` available in path, [link](https://github.com/relardev/go-pattern-implement)
 
 ## Install And Example Setup With Lazy
 
