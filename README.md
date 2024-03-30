@@ -1,14 +1,16 @@
 # GO Pattern Implement NeoVim Integration
 
+![Go Pattern Implement](pattern-implement.gif)
+
 ## Prequisites
 
  1. `go-pattern-implement` available in path
 
-## Example Install And Setup With Lazy
+## Install And Example Setup With Lazy
 
 ```
 {
-    "relardev/go-pattern-implement.nvim",
+	"relardev/go-pattern-implement.nvim",
 	opts = {},
 	keys = {
 		{ "<leader>n", ":GoImplement<CR>", mode = "v" },
